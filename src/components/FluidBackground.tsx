@@ -1,6 +1,7 @@
-import React, { useRef, useMemo, useEffect } from 'react';
+import React, { useRef, useMemo, useEffect, useState, useCallback } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
+import WebGLErrorFallback from './WebGLErrorFallback';
 
 const vertexShader = `
   uniform float uTime;
@@ -181,17 +182,109 @@ function Particles() {
   );
 }
 
+// WebGL detection utility
+function isWebGLSupported(): boolean {
+  try {
+    const canvas = document.createElement('canvas');
+    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    return !!(gl && gl instanceof WebGLRenderingContext);
+  } catch (e) {
+    return false;
+  }
+}
+
+// Error boundary component for Three.js Canvas
+function CanvasErrorBoundary({ children, onError }: { children: React.ReactNode; onError: (error: string) => void }) {
+  useEffect(() => {
+    const handleError = (event: ErrorEvent) => {
+      if (event.message.includes('WebGL') || event.message.includes('THREE')) {
+        onError(event.message);
+      }
+    };
+
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      if (event.reason?.message?.includes('WebGL') || event.reason?.message?.includes('THREE')) {
+        onError(event.reason.message);
+      }
+    };
+
+    window.addEventListener('error', handleError);
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+
+    return () => {
+      window.removeEventListener('error', handleError);
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+    };
+  }, [onError]);
+
+  return <>{children}</>;
+}
+
 export default function FluidBackground() {
+  const [hasWebGLError, setHasWebGLError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string>('');
+  const [retryCount, setRetryCount] = useState(0);
+
+  // Check WebGL support on mount
+  useEffect(() => {
+    if (!isWebGLSupported()) {
+      setHasWebGLError(true);
+      setErrorMessage('WebGL is not supported or enabled in your browser');
+    }
+  }, []);
+
+  const handleCanvasError = useCallback((error: string) => {
+    console.warn('WebGL Error:', error);
+    setHasWebGLError(true);
+    setErrorMessage(error);
+  }, []);
+
+  const handleRetry = useCallback(() => {
+    setHasWebGLError(false);
+    setErrorMessage('');
+    setRetryCount(prev => prev + 1);
+  }, []);
+
+  // Show fallback if WebGL is not supported or there's an error
+  if (hasWebGLError) {
+    return <WebGLErrorFallback error={errorMessage} onRetry={handleRetry} />;
+  }
+
   return (
     <div className="fixed inset-0 z-0">
-      <Canvas
-        camera={{ position: [0, 0, 5], fov: 75 }}
-        style={{ background: '#050508' }}
-        dpr={Math.min(window.devicePixelRatio, 2)}
-      >
-        <FluidMesh />
-        <Particles />
-      </Canvas>
+      <CanvasErrorBoundary onError={handleCanvasError}>
+        <Canvas
+          key={retryCount} // Force remount on retry
+          camera={{ position: [0, 0, 5], fov: 75 }}
+          style={{ background: '#050508' }}
+          dpr={Math.min(window.devicePixelRatio, 2)}
+          onCreated={({ gl }) => {
+            // Additional WebGL context validation
+            if (!gl || gl.isContextLost()) {
+              handleCanvasError('WebGL context is lost or invalid');
+              return;
+            }
+            
+            // Set up context loss handling
+            const canvas = gl.domElement;
+            canvas.addEventListener('webglcontextlost', (event) => {
+              event.preventDefault();
+              handleCanvasError('WebGL context was lost');
+            });
+            
+            canvas.addEventListener('webglcontextrestored', () => {
+              console.log('WebGL context restored');
+              handleRetry();
+            });
+          }}
+          onError={(error) => {
+            handleCanvasError(error.message || 'Unknown WebGL error');
+          }}
+        >
+          <FluidMesh />
+          <Particles />
+        </Canvas>
+      </CanvasErrorBoundary>
     </div>
   );
 }
