@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Home, MessageSquare, Mic, FileText, Network } from 'lucide-react';
+import { Home, MessageSquare, Mic, FileText, Network, Archive } from 'lucide-react';
 
 const navItems = [
   { id: 'home', icon: Home, label: 'Home', path: '/' },
@@ -9,6 +9,7 @@ const navItems = [
   { id: 'audio', icon: Mic, label: 'Audio', path: '/audio' },
   { id: 'summary', icon: FileText, label: 'Summary', path: '/summary' },
   { id: 'graph', icon: Network, label: 'Graph', path: '/graph' },
+  { id: 'memory', icon: Archive, label: 'Memory', path: '/memory' },
 ];
 
 export default function BottomNavigation() {

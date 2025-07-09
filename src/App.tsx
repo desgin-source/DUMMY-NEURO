@@ -7,6 +7,7 @@ import AudioPage from './pages/AudioPage';
 import SummaryPage from './pages/SummaryPage';
 import GraphPage from './pages/GraphPage';
 import ChatPage from './pages/ChatPage';
+import MemoryPage from './pages/MemoryPage';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           <Route path="/summary" element={<SummaryPage />} />
           <Route path="/graph" element={<GraphPage />} />
           <Route path="/chat" element={<ChatPage />} />
+          <Route path="/memory" element={<MemoryPage />} />
         </Routes>
         
         <BottomNavigation />

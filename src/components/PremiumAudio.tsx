@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Mic, Upload, Play, Square, FileText, Loader2 } from 'lucide-react';
+import { memoryDB } from '../utils/database';
 
 export default function PremiumAudio() {
   const [isRecording, setIsRecording] = useState(false);
@@ -81,9 +82,28 @@ export default function PremiumAudio() {
     setTranscription('');
     
     setTimeout(() => {
-      setTranscription(
+      const transcriptionText = 
         "This is a sophisticated transcription of your audio content. In a production environment, this would utilize advanced AI models like Whisper or similar speech-to-text services to provide accurate, contextual transcription with speaker identification and semantic understanding."
-      );
+      ;
+      
+      setTranscription(transcriptionText);
+      
+      // Save to memory database
+      try {
+        const title = `Audio Recording - ${new Date().toLocaleDateString()}`;
+        memoryDB.saveConversation({
+          title,
+          transcription: transcriptionText,
+          duration: recordingTime || 180, // Use actual recording time or default
+          audio_file_name: audioFile.name,
+          summary: "AI-generated transcription from audio upload",
+          tags: "audio,transcription,ai"
+        });
+        console.log('Conversation saved to memory database');
+      } catch (error) {
+        console.error('Error saving to memory database:', error);
+      }
+      
       setIsProcessing(false);
     }, 3000);
   };
