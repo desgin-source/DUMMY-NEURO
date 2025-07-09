@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Mic, Shield, Bot, Link, Users } from 'lucide-react';
+import AnimatedBackground from './AnimatedBackground';
 
 const features = [
   {
@@ -37,10 +38,11 @@ const features = [
 
 export default function VoiceMemoryEngine() {
   return (
-    <section className="relative py-32 px-6 bg-gradient-to-br from-[#081F5C] via-[#0B0E11] to-[#000000]">
+    <section className="relative py-32 px-6 bg-gradient-to-br from-[#081F5C] via-[#0B0E11] to-[#000000] overflow-hidden">
+      <AnimatedBackground />
       <div className="max-w-7xl mx-auto">
         <motion.div
-          className="text-center mb-20"
+          className="text-center mb-20 relative z-10"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
@@ -58,7 +60,7 @@ export default function VoiceMemoryEngine() {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative z-10">
           {features.map((feature, index) => {
             const Icon = feature.icon;
             
