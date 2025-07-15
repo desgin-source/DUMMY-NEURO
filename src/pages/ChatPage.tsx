@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Send, Bot, User, Sparkles } from 'lucide-react';
+import { Send, Bot, User, Sparkles, Phone } from 'lucide-react';
 
 interface Message {
   id: number;
@@ -10,6 +11,7 @@ interface Message {
 }
 
 export default function ChatPage() {
+  const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
@@ -68,6 +70,15 @@ export default function ChatPage() {
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">
             AI Memory Assistant
           </h1>
+          <motion.button
+            onClick={() => navigate('/voice-call')}
+            className="inline-flex items-center space-x-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-6 py-3 rounded-2xl font-semibold hover:shadow-lg hover:shadow-cyan-500/25 transition-all duration-300 mb-4"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Phone size={20} />
+            <span>AI Voice Call</span>
+          </motion.button>
           <p className="text-xl text-white/60">
             Ask questions about your stored knowledge
           </p>
